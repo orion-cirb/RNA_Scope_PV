@@ -1,4 +1,4 @@
-package RNA_Scope_PV_Stardist;
+package StardistOrion;
 
 
 import java.io.File;
@@ -15,17 +15,11 @@ import org.scijava.command.CommandModule;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.WaitForUserDialog;
 import ij.plugin.Concatenator;
-import java.util.List;
-import mcib3d.geom.Object3D;
-import mcib3d.geom.Objects3DPopulation;
+import java.io.PrintStream;
+import mcib3d.geom2.tracking.TrackingAssociation;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
-import mcib3d.tracking_dev.Association;
-import mcib3d.tracking_dev.AssociationPair;
-import mcib3d.tracking_dev.AssociationPairOld;
-import mcib3d.tracking_dev.CostColocalisation;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
@@ -67,9 +61,11 @@ public class StarDist2D extends StarDist2DBase implements Command {
     private ImageJ ij;
     private Object obj_;
     private File tmpModelFile_ = null;
+    private double minColoc = 0.1;     
+    private double maxBB = 0;
+    private int costChoice = 0 ;
     
-    
-    private int max = 0; // for association labels
+    private float max = 0; // for association labels
     
     public StarDist2D(Object obj, File tmpModelFile) {
          ij = new ImageJ();
@@ -115,7 +111,9 @@ public class StarDist2D extends StarDist2DBase implements Command {
             roiPositionActive = input.numDimensions() > 3 && !input.isRGBMerged() ? "Hyperstack" : "Stack";
         else
             roiPositionActive = roiPosition;
-
+        PrintStream console = System.out;
+        System.out.println("Starting StarDist ...");
+        System.setOut(new NullPrintStream());
         try {
             final HashMap<String, Object> paramsCNN = new HashMap<>();
             paramsCNN.put("input", input);
@@ -198,7 +196,8 @@ public class StarDist2D extends StarDist2DBase implements Command {
             } 
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
-        } 
+        }
+        System.setOut(console);
     }
 
     // this function is very cumbersome... is there a better way to do this?
@@ -308,67 +307,20 @@ public class StarDist2D extends StarDist2DBase implements Command {
         ImageHandler img1 = ImageInt.wrap(ref);
         ImageHandler img2 = ImageInt.wrap(ip);
         
-        Objects3DPopulation population1 = new Objects3DPopulation(img1);
-        Objects3DPopulation population2 = new Objects3DPopulation(img2);
-        
-        Association association = new Association(population1, population2, new CostColocalisation(population1, population2,10));
-        association.verbose = false;
-        association.computeAssociation();
-        // final associations
-        List<AssociationPairOld> finalAssociations = association.getAssociationPairs();
-        //List<Object3D> finalOrphan1 = association.getOrphan1Population().getObjectsList();
-        List<Object3D> finalOrphan2 = association.getOrphan2Population().getObjectsList();
-    
-        // create results
-        ImageHandler tracked = img1.createSameDimensions();
-                
-        // draw results
-        for (AssociationPairOld pair : finalAssociations) {
-            int val1 = pair.getObject3D1().getValue();
-            pair.getObject3D2().draw(tracked, val1);
-            if (val1 > max) max = val1;
-        }
-        // orphan2
-        for (Object3D object3D : finalOrphan2) {
-            max++;
-            object3D.draw(tracked, max);
-        }
-        return tracked.getImagePlus();
+        TrackingAssociation association = new TrackingAssociation(img1, img2, maxBB, minColoc);
+        ImageHandler trackedImage = association.getTrackedImage();
+
+        return trackedImage.getImagePlus();
     }
     
     public void setParams(double percentileBottomVar, double percentileTopVar, double probThreshVar, double overlapThreshVar, String outPutType){
-    /*try {*/
 
-    percentileBottom = percentileBottomVar;
-    percentileTop = percentileTopVar;
-    probThresh = probThreshVar;
-    nmsThresh = overlapThreshVar;
-    outputType = outPutType;
-    /*switch(modelType){
-        case "file" :
-            paramCNN.put("modelFile", model);
-            break;
-        case "url" :
-            paramCNN.put("modelUrl", model);
-            break;
-        default:
-            final StarDist2DModel pretrainedModel = new StarDist2DModel(StarDist2DModel.class.getClassLoader().getResource("models"+File.pathSeparator+"dsb2018_heavy_augment.zip"), 0.479071, 0.3, 16, 96);
-            if (pretrainedModel.canGetFile()) {
-                final File file = pretrainedModel.getFile();
-                paramCNN.put("modelFile", file);
-            }
-            else {
-                paramCNN.put("modelUrl", pretrainedModel.url);
-            }
-            paramCNN.put("blockMultiple", pretrainedModel.sizeDivBy);
-            paramCNN.put("overlap", pretrainedModel.tileOverlap);
+        percentileBottom = percentileBottomVar;
+        percentileTop = percentileTopVar;
+        probThresh = probThreshVar;
+        nmsThresh = overlapThreshVar;
+        outputType = outPutType;
 
-    }*/
-
-
-   /* } catch (IOException e) {
-        e.printStackTrace();
-    } */
-}
+    }
 
 }

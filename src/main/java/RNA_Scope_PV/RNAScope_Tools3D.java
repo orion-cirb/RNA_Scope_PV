@@ -1,6 +1,6 @@
 package RNA_Scope_PV;
 
-import RNA_Scope_PV_Stardist.StarDist2D;
+import StardistOrion.StarDist2D;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import static ij.IJ.setBackgroundColor;
@@ -20,8 +20,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.ImageIcon;
@@ -80,11 +82,12 @@ public class RNAScope_Tools3D {
     public Object syncObject = new Object();
     public final double stardistPercentileBottom = 0.2;
     public final double stardistPercentileTop = 99.8;
-    public final double stardistProbThreshNuc = 0.7;
+    public final double stardistProbThreshNuc = 0.55;
     public final double stardistOverlayThreshNuc = 0.35;
     public String stardistOutput = "Label Image"; 
     protected String starDistModel = null;
-
+    public File modelsPath = new File(IJ.getDirectory("imagej")+File.separator+"models");
+    
     // CLIJ2
     public CLIJ2 clij2 = CLIJ2.getInstance();
     
@@ -169,6 +172,19 @@ public class RNAScope_Tools3D {
         }
     }
     
+    /*
+    Find starDist models in Fiji models folder
+    */
+    private String[] findStardistModels() {
+        FilenameFilter filter = (dir, name) -> name.endsWith(".zip");
+        File[] modelList = modelsPath.listFiles(filter);
+        String[] models = new String[modelList.length];
+        for (int i = 0; i < modelList.length; i++) {
+            models[i] = modelList[i].getName();
+        }
+        Arrays.sort(models);
+        return(models);
+    }
     
     
     /**
@@ -216,18 +232,26 @@ public class RNAScope_Tools3D {
      */
     
     public String dialog() {
-        
+        String[] models = findStardistModels();
         GenericDialogPlus gd = new GenericDialogPlus("IHC parameters");
         gd.setInsets(0, 10, 0);
         gd.addImage(icon);
         gd.addDirectoryField("Image folder : ", "");
         gd.addMessage("Cells detection",Font.getFont("Monospace"), Color.blue);
-        gd.addCheckbox("Stardist :", stardist);
-        gd.addFileField("Model file :", starDistModel);
+        gd.addCheckbox("StarDist :", stardist);
+        if (models.length == 0)
+            gd.addFileField("Model file :", starDistModel);
         gd.showDialog();
         String imageFolder = gd.getNextString();
         stardist = gd.getNextBoolean();
-        starDistModel = gd.getNextString();
+        if (models.length == 0)
+            starDistModel = gd.getNextString();
+        else {
+            for (String model : models) {
+                if (model.equals("dsb2018_heavy_augment.zip"))
+                    starDistModel = modelsPath+File.separator+model;
+            }
+        }
         return(imageFolder);
     }
   
@@ -238,6 +262,7 @@ public class RNAScope_Tools3D {
      */
     
     public int[] dialog(String[] channels, List<String> channelsName) {
+        String[] models = findStardistModels();
         GenericDialogPlus gd = new GenericDialogPlus("IHC parameters");
         gd.setInsets(0, 10, 0);
         gd.addImage(icon);
@@ -254,8 +279,9 @@ public class RNAScope_Tools3D {
             gd.addNumericField("Low contrast  : ", ridgeLow);
         }
         gd.addMessage("Cells detection method",Font.getFont("Monospace"), Color.blue);
-        gd.addCheckbox("Stardist ", stardist);
-        gd.addFileField("Tensor flow Model file :", starDistModel);
+        gd.addCheckbox("StarDist ", stardist);
+        if (models.length == 0)
+            gd.addFileField("Model file :", starDistModel);
         gd.addCheckbox("Objective X63", obj63);
         gd.showDialog();
         int[] chChoices = new int[channelsName.size()];
@@ -268,7 +294,14 @@ public class RNAScope_Tools3D {
             ridgeLow = gd.getNextNumber();
         }
         stardist = gd.getNextBoolean();
-        starDistModel = gd.getNextString();
+        if (models.length == 0)
+            starDistModel = gd.getNextString();
+        else {
+            for (String model : models) {
+                if (model.equals("dsb2018_heavy_augment.zip"))
+                    starDistModel = modelsPath+File.separator+model;
+            }
+        }
         obj63 = gd.getNextBoolean();
         if (gd.wasCanceled())
             chChoices = null;

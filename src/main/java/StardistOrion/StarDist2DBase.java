@@ -1,4 +1,4 @@
-package RNA_Scope_PV_Stardist;
+package StardistOrion;
 
 import java.net.URL;
 import java.util.List;
