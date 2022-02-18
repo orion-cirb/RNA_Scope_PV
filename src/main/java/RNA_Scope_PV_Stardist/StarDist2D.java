@@ -24,6 +24,7 @@ import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.ImageInt;
 import mcib3d.tracking_dev.Association;
 import mcib3d.tracking_dev.AssociationPair;
+import mcib3d.tracking_dev.AssociationPairOld;
 import mcib3d.tracking_dev.CostColocalisation;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
@@ -314,7 +315,7 @@ public class StarDist2D extends StarDist2DBase implements Command {
         association.verbose = false;
         association.computeAssociation();
         // final associations
-        List<AssociationPair> finalAssociations = association.getAssociationPairs();
+        List<AssociationPairOld> finalAssociations = association.getAssociationPairs();
         //List<Object3D> finalOrphan1 = association.getOrphan1Population().getObjectsList();
         List<Object3D> finalOrphan2 = association.getOrphan2Population().getObjectsList();
     
@@ -322,7 +323,7 @@ public class StarDist2D extends StarDist2DBase implements Command {
         ImageHandler tracked = img1.createSameDimensions();
                 
         // draw results
-        for (AssociationPair pair : finalAssociations) {
+        for (AssociationPairOld pair : finalAssociations) {
             int val1 = pair.getObject3D1().getValue();
             pair.getObject3D2().draw(tracked, val1);
             if (val1 > max) max = val1;

@@ -83,7 +83,7 @@
                 <dependency>
 			<groupId>org.framagit.mcib3d</groupId>
 			<artifactId>mcib3d-core</artifactId>
-			<version>3.96.3</version>
+			<version>4.0.63</version>
                         <type>jar</type>
                 </dependency>
                 <dependency>
