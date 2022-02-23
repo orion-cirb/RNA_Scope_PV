@@ -1,6 +1,6 @@
 package RNA_Scope_PV;
 
-import StardistOrion.StarDist2D;
+import RNA_Scope_PV_StardistOrion.StarDist2D;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
 import static ij.IJ.setBackgroundColor;
