@@ -82,7 +82,7 @@ public class mRNA_PV implements PlugIn {
                 return;
             }
             // Find images with nd extension
-            ArrayList<String> imageFile = tools.findImages(imageDir, "lif");
+            ArrayList<String> imageFile = tools.findImages(imageDir);
             if (imageFile == null) {
                 IJ.showMessage("Error", "No images found with lif extension");
                 return;

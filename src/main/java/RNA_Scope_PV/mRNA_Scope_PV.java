@@ -72,7 +72,7 @@ public class mRNA_Scope_PV implements PlugIn {
                 return;
             }
             // Find images with nd extension
-            ArrayList<String> imageFile = tools.findImages(imageDir, "lif");
+            ArrayList<String> imageFile = tools.findImages(imageDir);
             if (imageFile == null) {
                 IJ.showMessage("Error", "No images found with lif extension");
                 return;
@@ -279,7 +279,7 @@ public class mRNA_Scope_PV implements PlugIn {
                             }
                             // Find PNN cells with xml points file
                             ArrayList<Point3D> PNNPoints = tools.readXML(xmlFile, null);
-                            if (tools.pnnDetection.equals("ridge"))
+                            if (tools.pnnDetection.equals("Ridge"))
                                     PNNPop = tools.findPNNCellsRidge(imgPNN, null, PNNPoints);
                             else
                                 PNNPop = tools.findPNNCellsOutliner(imgPNN, null, PNNPoints);

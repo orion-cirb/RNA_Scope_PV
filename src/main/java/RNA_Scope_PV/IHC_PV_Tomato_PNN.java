@@ -108,7 +108,7 @@ public class IHC_PV_Tomato_PNN implements PlugIn {
                 return;
             }
             // Find images with nd extension
-            ArrayList<String> imageFile = tools.findImages(imageDir, "nd");
+            ArrayList<String> imageFile = tools.findImages(imageDir);
             if (imageFile == null) {
                 IJ.showMessage("Error", "No images found with nd extension");
                 return;
@@ -216,7 +216,7 @@ public class IHC_PV_Tomato_PNN implements PlugIn {
                             // PNN background
                             double[] bgPNN = tools.find_background(imgPNN);
                             Objects3DPopulation PNNPop = new Objects3DPopulation();
-                            if (tools.pnnDetection.equals("ridge"))
+                            if (tools.pnnDetection.equals("Ridge"))
                                     PNNPop = tools.findPNNCellsRidge(imgPNN, roi, PNNPoints);
                             else
                                 PNNPop = tools.findPNNCellsOutliner(imgPNN, roi, PNNPoints);

@@ -312,7 +312,7 @@ public class RNAScope_Tools3D {
     /**
      * Find images in folder
      */
-    public ArrayList findImages(String imagesFolder, String imageExt) {
+    public ArrayList findImages(String imagesFolder) {
         File inDir = new File(imagesFolder);
         String[] files = inDir.list();
         ArrayList<String> images = new ArrayList();
@@ -321,11 +321,10 @@ public class RNAScope_Tools3D {
             return null;
         }
         else {
-            
             for (String f : files) {
                 // Find images with extension
                 String fileExt = FilenameUtils.getExtension(f);
-                if (fileExt.equals(imageExt))
+                if (fileExt.equals("nd") || fileExt.equals("lif") || fileExt.equals("czi") || fileExt.equals("ics"))
                     images.add(imagesFolder + File.separator + f);
             }
             Collections.sort(images);

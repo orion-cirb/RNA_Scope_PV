@@ -95,7 +95,7 @@ public class IHC_GFP_PV_Tomato implements PlugIn {
             }
             
             // Find images with nd extension
-            ArrayList<String> imageFile = tools.findImages(imageDir, "nd");
+            ArrayList<String> imageFile = tools.findImages(imageDir);
             if (imageFile == null) {
                 IJ.showMessage("Error", "No images found with nd extension");
                 return;

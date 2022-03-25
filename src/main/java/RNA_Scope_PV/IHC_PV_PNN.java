@@ -95,7 +95,7 @@ public class IHC_PV_PNN implements PlugIn {
                 return;
             }
             // Find images with lif extension
-            ArrayList<String> imageFile = tools.findImages(imageDir, "lif");
+            ArrayList<String> imageFile = tools.findImages(imageDir);
             if (imageFile == null) {
                 IJ.showMessage("Error", "No images found with lif extension");
                 return;
@@ -216,7 +216,7 @@ public class IHC_PV_PNN implements PlugIn {
                                 double[] bgPNN = tools.find_background(imgPNN);
                                 tools.median_filter(imgPNN, 1);
                                 Objects3DPopulation PNNPop = new Objects3DPopulation();
-                                if (tools.pnnDetection.equals("ridge"))
+                                if (tools.pnnDetection.equals("Ridge"))
                                         PNNPop = tools.findPNNCellsRidge(imgPNN, roi, PNNPoints);
                                 else
                                     PNNPop = tools.findPNNCellsOutliner(imgPNN, roi, PNNPoints);
