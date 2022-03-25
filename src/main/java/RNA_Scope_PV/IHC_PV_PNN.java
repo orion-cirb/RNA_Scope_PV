@@ -151,27 +151,30 @@ public class IHC_PV_PNN implements PlugIn {
                 // Find roi points file
                 String rootFilename =  imageDir+ File.separator + rootName;
                 String roiFile = new File(rootFilename + ".zip").exists() ? rootFilename + ".zip" : rootFilename + ".roi";
-                if (!new File(roiFile).exists())
-                    IJ.showStatus("No roi file found !");
+                
                 // Roi
                 RoiManager rm = new RoiManager(false);
                 if (new File(roiFile).exists())
                     rm.runCommand("Open", roiFile);
                 
                 ImporterOptions options = new ImporterOptions();
-                int series=  reader.getSeriesCount();
+                int series =  reader.getSeriesCount();
                 // for all series
                 for (int s = 0; s < series; s++) {
                     String seriesName = meta.getImageName(s);
                     // Find xml points file
-                    String xmlFile = imageDir+ File.separator + rootName + "_" + seriesName + ".xml";
+                    String xmlFile = "";
+                    if (series != 1)
+                        xmlFile = imageDir+ File.separator + rootName + "_" + seriesName + ".xml";
+                    else
+                       xmlFile = imageDir+ File.separator + rootName + ".xml";
                     if (!new File(xmlFile).exists()) {
                         IJ.showStatus("No XML file found !") ;
                     }
                     else {
                         
                         /** 
-                         * read lif
+                         * read
                          * Detect IHC PV cells channel 1, measure intensity
                          * compute donut PV Object and measure in PNN channel 2
                          * Detect PNN cells measure intensity in PNN channel and find corresponding PV Cell
@@ -193,7 +196,6 @@ public class IHC_PV_PNN implements PlugIn {
                         for (int r = 0; r < rm.getCount(); r++) {
                             Roi roi = rm.getRoi(r);
                             String roiName = roi.getName();
-
                             // if roi name contains series name
                             // Find crop region
                             if (roiName.contains(seriesName)) {
