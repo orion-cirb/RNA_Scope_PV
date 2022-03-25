@@ -215,7 +215,12 @@ public class IHC_PV_Tomato_PNN implements PlugIn {
                             ImagePlus imgPNN = BF.openImagePlus(options)[0];
                             // PNN background
                             double[] bgPNN = tools.find_background(imgPNN);
-                            Objects3DPopulation PNNPop = tools.findPNNCells(imgPNN, roi, PNNPoints);
+                            Objects3DPopulation PNNPop = new Objects3DPopulation();
+                            if (tools.pnnDetection.equals("ridge"))
+                                    PNNPop = tools.findPNNCellsRidge(imgPNN, roi, PNNPoints);
+                            else
+                                PNNPop = tools.findPNNCellsOutliner(imgPNN, roi, PNNPoints);
+
                             System.out.println("PNN Cells found : " + PNNPop.getNbObjects() + " in " + roiName);
 
                             //PV

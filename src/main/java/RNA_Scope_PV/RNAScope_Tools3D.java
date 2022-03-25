@@ -7,6 +7,8 @@ import static ij.IJ.setBackgroundColor;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.Prefs;
+import ij.WindowManager;
+import ij.gui.PointRoi;
 import ij.gui.Roi;
 import ij.io.FileSaver;
 import ij.measure.Calibration;
@@ -69,6 +71,7 @@ public class RNAScope_Tools3D {
     public Calibration cal = new Calibration();
     public final ImageIcon icon = new ImageIcon(this.getClass().getResource("/Orion_icon.png"));
     public boolean pnn = false;
+    public String pnnDetection = "";
     public boolean obj63 = false;
     
     // Ridge detection
@@ -263,6 +266,7 @@ public class RNAScope_Tools3D {
     
     public int[] dialog(String[] channels, List<String> channelsName) {
         String[] models = findStardistModels();
+        String[] pnnDetections = {"Ridge","Outliner Cell"};
         GenericDialogPlus gd = new GenericDialogPlus("IHC parameters");
         gd.setInsets(0, 10, 0);
         gd.addImage(icon);
@@ -273,10 +277,8 @@ public class RNAScope_Tools3D {
             index++;
         }
         if (pnn) {
-            gd.addMessage("PNN cells ridge detection",Font.getFont("Monospace"), Color.blue);
-            gd.addNumericField("Line width    : ", ridgeLine);
-            gd.addNumericField("High contrast : ", ridgeHigh);
-            gd.addNumericField("Low contrast  : ", ridgeLow);
+            gd.addMessage("PNN cells detection",Font.getFont("Monospace"), Color.blue);
+            gd.addChoice("PNN method : ", pnnDetections, pnnDetections[0]);
         }
         gd.addMessage("Cells detection method",Font.getFont("Monospace"), Color.blue);
         gd.addCheckbox("StarDist ", stardist);
@@ -289,9 +291,7 @@ public class RNAScope_Tools3D {
             chChoices[n] = ArrayUtils.indexOf(channels, gd.getNextChoice());
         }
         if (pnn) {
-            ridgeLine = gd.getNextNumber();
-            ridgeHigh = gd.getNextNumber();
-            ridgeLow = gd.getNextNumber();
+            pnnDetection = gd.getNextChoice();
         }
         stardist = gd.getNextBoolean();
         if (models.length == 0)
@@ -526,16 +526,45 @@ public class RNAScope_Tools3D {
         return(nPop);
     } 
     
-   
+   /**
+     * Find PNN cells with cellOutliner
+     * @param pts
+     * @param imgPNN
+     * @return PNNCellsPop
+     */
+    public Objects3DPopulation findPNNCellsOutliner(ImagePlus imgPNN, Roi roi, ArrayList<Point3D> pts) {
+        ImagePlus img = imgPNN.duplicate();
+        img.setTitle("PNN Cells");
+        IJ.run(img, "Median...", "radius=4 stack");
+        Objects3DPopulation cellPop = new Objects3DPopulation();
+        // add points 
+
+        for (int i = 0; i < pts.size(); i++) {
+            Point3D point = pts.get(i);
+            img.setPosition(i+1);
+            img.setRoi(new PointRoi(point.x, point.y));
+            img.updateAndDraw();
+            IJ.run(img, "Cell Outliner", "cell_radius=50 tolerance=0.74 kernel_width=13 kernel_smoothing=1 polygon_smoothing=2 weighting_gamma=3 iterations=3 dilate=5 all_slices");
+            ImagePlus imgCells = WindowManager.getImage("PNN Cells Cell Outline");
+            imgCells.hide();
+            imgCells.setCalibration(img.getCalibration());
+            IJ.run(imgCells, "Select None", "");
+            cellPop.addObject(new Object3DVoxels(ImageHandler.wrap(imgCells)));
+            cellPop.removeObjectsTouchingBorders(imgCells, false);
+            closeImages(imgCells);
+        }
+        closeImages(img);
+        return(cellPop);
+    }
     
    /**
-     * PNN Cells segmentation
+     * PNN Cells segmentation with Ridge
      * @param imgCells
      * @param roi
      * @param pts
      * @return 
      */
-    public Objects3DPopulation findPNNCells(ImagePlus imgCells, Roi roi, ArrayList<Point3D> pts) { 
+    public Objects3DPopulation findPNNCellsRidge(ImagePlus imgCells, Roi roi, ArrayList<Point3D> pts) { 
         ridgeDectection.lineWidth = ridgeLine;
         ridgeDectection.sigma = 2.8;
         ridgeDectection.lowerThresh = 0;

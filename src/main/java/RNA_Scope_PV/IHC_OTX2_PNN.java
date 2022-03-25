@@ -210,7 +210,11 @@ public class IHC_OTX2_PNN implements PlugIn {
                                 // PNN background
                                 double[] bgPNN = tools.find_background(imgPNN);
                                 tools.median_filter(imgPNN, 1);
-                                Objects3DPopulation PNNPop = tools.findPNNCells(imgPNN, roi, PNNPoints);
+                                Objects3DPopulation PNNPop = new Objects3DPopulation();
+                                if (tools.pnnDetection.equals("ridge"))
+                                    PNNPop = tools.findPNNCellsRidge(imgPNN, roi, PNNPoints);
+                                else
+                                    PNNPop = tools.findPNNCellsOutliner(imgPNN, roi, PNNPoints);
                                 System.out.println("PNN Cells found : " + PNNPop.getNbObjects());
 
                                 //OTX2

@@ -279,7 +279,11 @@ public class mRNA_Scope_PV implements PlugIn {
                             }
                             // Find PNN cells with xml points file
                             ArrayList<Point3D> PNNPoints = tools.readXML(xmlFile, null);
-                            PNNPop = tools.findPNNCells(imgPNN, null, PNNPoints);
+                            if (tools.pnnDetection.equals("ridge"))
+                                    PNNPop = tools.findPNNCellsRidge(imgPNN, null, PNNPoints);
+                            else
+                                PNNPop = tools.findPNNCellsOutliner(imgPNN, null, PNNPoints);
+
                             System.out.println("PNN Cells found : " + PNNPop.getNbObjects());
                             for (int o = 0; o < PNNPop.getNbObjects(); o++) {
                                 Object3D obj = PNNPop.getObject(o);
