@@ -1,5 +1,6 @@
 package RNA_Scope_PV;
 
+import CellOutLiner.CellOutliner;
 import RNA_Scope_PV_StardistOrion.StarDist2D;
 import fiji.util.gui.GenericDialogPlus;
 import ij.IJ;
@@ -10,6 +11,7 @@ import ij.Prefs;
 import ij.WindowManager;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
+import ij.gui.WaitForUserDialog;
 import ij.io.FileSaver;
 import ij.measure.Calibration;
 import ij.plugin.Duplicator;
@@ -94,6 +96,8 @@ public class RNAScope_Tools3D {
     // CLIJ2
     public CLIJ2 clij2 = CLIJ2.getInstance();
     
+    // CellOutLiner
+    private CellOutliner cell = new CellOutliner();
     
     /**
      * check  installed modules
@@ -537,19 +541,32 @@ public class RNAScope_Tools3D {
         IJ.run(img, "Median...", "radius=4 stack");
         Objects3DPopulation cellPop = new Objects3DPopulation();
         // add points 
-
+        cell.cellRadius = 50;
+        cell.darkEdge = false;
+        cell.dilate = 5;
+        cell.iterations = 3;
+        cell.tolerance = 0.74;
+        cell.kernelSmoothing = 1;
+        cell.polygonSmoothing = 2;
+        cell.kernelWidth = 13;cell.cellRadius = 50;
+        cell.darkEdge = false;
+        cell.dilate = 5;
+        cell.iterations = 3;
+        cell.tolerance = 0.74;
+        cell.kernelSmoothing = 1;
+        cell.polygonSmoothing = 2;
+        cell.buildMaskOutput = true;
         for (int i = 0; i < pts.size(); i++) {
             Point3D point = pts.get(i);
-            img.setPosition(i+1);
+            img.setSlice(point.getRoundZ());
             img.setRoi(new PointRoi(point.x, point.y));
             img.updateAndDraw();
-            IJ.run(img, "Cell Outliner", "cell_radius=50 tolerance=0.74 kernel_width=13 kernel_smoothing=1 polygon_smoothing=2 weighting_gamma=3 iterations=3 dilate=5 all_slices");
-            ImagePlus imgCells = WindowManager.getImage("PNN Cells Cell Outline");
-            imgCells.hide();
+            cell.setup("", img);
+            cell.run(img.getProcessor());
+            ImagePlus imgCells = cell.maskImp;
             imgCells.setCalibration(img.getCalibration());
             IJ.run(imgCells, "Select None", "");
             cellPop.addObject(new Object3DVoxels(ImageHandler.wrap(imgCells)));
-            cellPop.removeObjectsTouchingBorders(imgCells, false);
             closeImages(imgCells);
         }
         closeImages(img);
