@@ -122,9 +122,6 @@ public class IHC_PV_PNN implements PlugIn {
             
             // Find image calibration
             Calibration cal = tools.findImageCalib(meta);
-
-            // write headers
-            writeHeaders();
             
             // Channels dialog
             int[] channelIndex = new int[channels.length];
@@ -161,11 +158,13 @@ public class IHC_PV_PNN implements PlugIn {
                 int series =  reader.getSeriesCount();
                 // for all series
                 for (int s = 0; s < series; s++) {
-                    String seriesName = meta.getImageName(s);
+                    String seriesName = "";
                     // Find xml points file
                     String xmlFile = "";
-                    if (series != 1)
+                    if (series != 1) {
+                        seriesName = meta.getImageName(s);
                         xmlFile = imageDir+ File.separator + rootName + "_" + seriesName + ".xml";
+                    }
                     else
                        xmlFile = imageDir+ File.separator + rootName + ".xml";
                     if (!new File(xmlFile).exists()) {
